@@ -1,0 +1,64 @@
+version: '3.8'
+
+services:
+  # FastAPI Backend
+  backend:
+    build: .
+    ports:
+      - "8001:8001"
+    environment:
+      - GOOGLE_MAPS_API_KEY=${GOOGLE_MAPS_API_KEY}
+      - OPENWEB_UI_URL=http://open-webui:8080
+      - OPENWEB_UI_API_KEY=${OPENWEB_UI_API_KEY}
+      - OPENWEB_UI_MODEL=mistral:latest
+      - SERVER_HOST=0.0.0.0
+      - SERVER_PORT=8001
+      - RATE_LIMIT_PER_MINUTE=30
+      - DEBUG=False
+    depends_on:
+      - open-webui
+    networks:
+      - llm-maps
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # OpenWebUI for LLM
+  open-webui:
+    image: ghcr.io/open-webui/open-webui:latest
+    ports:
+      - "8000:8080"
+    environment:
+      - OLLAMA_BASE_URL=http://ollama:11434
+    depends_on:
+      - ollama
+    networks:
+      - llm-maps
+    restart: unless-stopped
+    volumes:
+      - open-webui-data:/app/backend/data
+
+  # Ollama for Local LLM
+  ollama:
+    image: ollama/ollama:latest
+    ports:
+      - "11434:11434"
+    networks:
+      - llm-maps
+    restart: unless-stopped
+    volumes:
+      - ollama-data:/root/.ollama
+    environment:
+      - OLLAMA_MODELS=/root/.ollama/models
+
+networks:
+  llm-maps:
+    driver: bridge
+
+volumes:
+  open-webui-data:
+  ollama-data:
