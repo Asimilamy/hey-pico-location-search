@@ -258,6 +258,11 @@
                     />
                 </div>
 
+                <div class="coords-info" id="coords-display">
+                    <strong>Location:</strong> Not set yet<br>
+                    <small>Click button below to enable location-based search</small>
+                </div>
+
                 <button id="search-btn" onclick="searchPlaces()">Search Places</button>
                 <button id="geolocation-btn" onclick="getCurrentLocation()" style="background: #666; margin-top: 10px;">📍 Use My Location</button>
             </div>
@@ -275,6 +280,8 @@
 
     <script>
         const API_BASE = "http://localhost:8001";
+        let userLat = null;
+        let userLon = null;
 
         // Get current geolocation
         function getCurrentLocation() {
@@ -286,9 +293,21 @@
             document.getElementById("geolocation-btn").disabled = true;
             navigator.geolocation.getCurrentPosition(
                 (position) => {
-                    const { latitude, longitude } = position.coords;
-                    alert(`Location: ${latitude.toFixed(4)}, ${longitude.toFixed(4)}`);
+                    userLat = position.coords.latitude;
+                    userLon = position.coords.longitude;
+                    alert(`Location saved: ${userLat.toFixed(4)}, ${userLon.toFixed(4)}`);
                     document.getElementById("geolocation-btn").disabled = false;
+
+                    // Update coordinates display
+                    document.getElementById("coords-display").innerHTML = `
+                        <strong>Location Set ✓</strong><br>
+                        Latitude: ${userLat.toFixed(6)}<br>
+                        Longitude: ${userLon.toFixed(6)}<br>
+                        <small style="color: #666;">Location will be included in searches</small>
+                    `;
+
+                    // Update button to show location is set
+                    document.getElementById("geolocation-btn").textContent = `📍 Location: ${userLat.toFixed(4)}, ${userLon.toFixed(4)}`;
                 },
                 (error) => {
                     alert("Error getting location: " + error.message);
@@ -312,9 +331,11 @@
             try {
                 const payload = {
                     query: query,
-                    latitude: null,
-                    longitude: null
+                    latitude: userLat,
+                    longitude: userLon
                 };
+
+                console.log('payload :>> ', payload);
 
                 const response = await fetch(`${API_BASE}/llm-search`, {
                     method: "POST",

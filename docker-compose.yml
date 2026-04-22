@@ -10,7 +10,7 @@ services:
       - GOOGLE_MAPS_API_KEY=${GOOGLE_MAPS_API_KEY}
       - OPENWEB_UI_URL=http://open-webui:8080
       - OPENWEB_UI_API_KEY=${OPENWEB_UI_API_KEY}
-      - OPENWEB_UI_MODEL=mistral:latest
+      - OPENWEB_UI_MODEL=tinyllama:latest
       - SERVER_HOST=0.0.0.0
       - SERVER_PORT=8001
       - RATE_LIMIT_PER_MINUTE=30

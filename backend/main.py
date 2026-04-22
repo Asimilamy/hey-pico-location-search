@@ -132,46 +132,46 @@ async def search_places(request: PlaceQuery) -> SearchResponse:
 async def llm_powered_search(request: PlaceQuery) -> SearchResponse:
     """
     Search places using LLM-powered natural language understanding
-    
+
     LLM interprets user's intent and suggests appropriate places
-    
+
     Args:
         request: User's natural language query
-    
+
     Returns:
         List of places based on LLM interpretation
     """
     try:
         if not request.query or len(request.query.strip()) < 2:
             raise HTTPException(status_code=400, detail="Query must be at least 2 characters")
-        
+
         # Query the LLM to understand user intent
         prompt = request.query
         llm_response = await llm_handler.query_llm(prompt)
-        
+
         # Check for LLM errors
         if llm_response.startswith("Error:"):
             raise HTTPException(status_code=503, detail=f"LLM unavailable: {llm_response}")
-        
+
         # Extract place query from LLM response
         place_query = llm_handler.extract_place_query(llm_response)
-        
+
         if not place_query:
             raise HTTPException(
-                status_code=400, 
+                status_code=400,
                 detail=f"LLM could not understand the query. Response: {llm_response}"
             )
-        
+
         # Search Google Maps using LLM-extracted query
         location = (request.latitude, request.longitude) if request.latitude else None
         results = maps_handler.search_place(
             query=place_query,
             location=location
         )
-        
+
         if "error" in results:
             raise HTTPException(status_code=500, detail=results["error"])
-        
+
         places = []
         for place in results.get("places", []):
             place_data = PlaceResponse(
@@ -189,7 +189,7 @@ async def llm_powered_search(request: PlaceQuery) -> SearchResponse:
                 types=place.get("types", [])
             )
             places.append(place_data)
-        
+
         return SearchResponse(
             query=f"{request.query} (LLM interpreted as: {place_query})",
             places=places,
