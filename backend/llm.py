@@ -30,7 +30,7 @@ class LLMHandler:
             async with aiohttp.ClientSession() as session:
                 # OpenWebUI chat/completions endpoint (standard OpenAI-compatible)
                 url = f"{self.base_url}/api/chat/completions"
-                
+
                 headers = {
                     "Authorization": f"Bearer {settings.openweb_ui_api_key}"
                 }
@@ -38,11 +38,11 @@ class LLMHandler:
                 payload = {
                     "model": self.model,
                     "messages": [
-                        {"role": "system", "content": "You are a helpful assistant that helps users find places. When responding to place search requests, respond with a short, clear place name or category (e.g., 'Italian restaurants', 'coffee shops', 'parks')."},
+                        {"role": "system", "content": "You are a place search helper. Your ONLY job is to:\n1. Take the user's search term\n2. Keep it EXACTLY as is\n3. Add 'restaurant' if it's a food/dish name\n4. Return ONLY the search query, nothing else\n\nExamples:\n- Input: 'Nasi Goreng' → Output: 'Nasi Goreng restaurant'\n- Input: 'coffee' → Output: 'coffee shop'\n- Input: 'park' → Output: 'park'\n- Input: 'I want pizza' → Output: 'pizza restaurant'\n\nDO NOT change or interpret the user's words. Keep the exact food/place name they mentioned."},
                         {"role": "user", "content": prompt}
                     ],
-                    "max_tokens": 100,
-                    "temperature": 0.7,
+                    "max_tokens": 50,
+                    "temperature": 0.1,
                     "stream": False
                 }
 
@@ -75,22 +75,22 @@ class LLMHandler:
         """
         # Remove common error messages and suffixes
         response = llm_response.strip()
-        
+
         # If LLM says it can't help, return empty
-        if any(phrase in response.lower() for phrase in 
+        if any(phrase in response.lower() for phrase in
                ["i can't", "unable to", "don't know", "not sure"]):
             return ""
-        
+
         # Remove "searching for:" or similar prefixes
         if ":" in response:
             response = response.split(":", 1)[1].strip()
-        
+
         # Take first line if multiple lines
         response = response.split("\n")[0].strip()
-        
+
         # Remove quotes if present
         response = response.strip('"\'')
-        
+
         return response
 
 

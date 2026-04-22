@@ -121,7 +121,7 @@
             border-radius: 6px;
             font-size: 0.9em;
             color: #666;
-            margin-bottom: 20px;
+            margin-top: 10px;
         }
 
         .results-section h2 {
@@ -258,13 +258,13 @@
                     />
                 </div>
 
-                <div class="coords-info" id="coords-display">
-                    <strong>Location:</strong> Not set yet<br>
-                    <small>Click button below to enable location-based search</small>
-                </div>
-
                 <button id="search-btn" onclick="searchPlaces()">Search Places</button>
                 <button id="geolocation-btn" onclick="getCurrentLocation()" style="background: #666; margin-top: 10px;">📍 Use My Location</button>
+
+                <div class="coords-info" id="coords-display">
+                    <strong>Location:</strong> Not set yet<br>
+                    <small>Click button above to enable location-based search</small>
+                </div>
             </div>
 
             <!-- Results Section -->
@@ -334,8 +334,6 @@
                     latitude: userLat,
                     longitude: userLon
                 };
-
-                console.log('payload :>> ', payload);
 
                 const response = await fetch(`${API_BASE}/llm-search`, {
                     method: "POST",
